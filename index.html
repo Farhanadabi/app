@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuovo Espresso Web Player</title>
+    <!-- Inter is a sleek font very similar to Spotify's custom font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        
+        <!-- Top Section: Sidebar + Main Content -->
+        <div class="main-container">
+            
+            <!-- Left Sidebar -->
+            <nav class="sidebar">
+                <div class="logo">
+                    <!-- Spotify-like dots icon -->
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="#000"/></svg>
+                    <span>Espresso Player</span>
+                </div>
+                
+                <div class="menu-section">
+                    <p class="menu-label">Your Library</p>
+                    <select id="book-select" class="book-dropdown">
+                        <option value="book1">Nuovo Espresso 1</option>
+                        <option value="book2">Nuovo Espresso 2</option>
+                    </select>
+                </div>
+            </nav>
+
+            <!-- Main Tracklist Area -->
+            <main class="content-view">
+                <header class="playlist-header">
+                    <div class="playlist-cover">NE</div>
+                    <div class="playlist-info">
+                        <span>ALBUM</span>
+                        <h1 id="playlist-title">Nuovo Espresso 1</h1>
+                        <p>Italian Audio Course • <span id="track-count">68</span> songs</p>
+                    </div>
+                </header>
+
+                <div class="tracklist-container">
+                    <!-- Table Header -->
+                    <div class="tracklist-header">
+                        <div class="col-num">#</div>
+                        <div class="col-title">Title</div>
+                        <div class="col-file">File Name</div>
+                    </div>
+                    
+                    <!-- Tracks go here -->
+                    <ul id="track-list" class="track-list"></ul>
+                </div>
+            </main>
+        </div>
+
+        <!-- Fixed Bottom Player -->
+        <footer class="bottom-player">
+            <!-- Left: Now Playing Info -->
+            <div class="now-playing">
+                <div class="np-cover" id="np-cover" style="opacity: 0;">NE</div>
+                <div class="np-info">
+                    <div id="np-title">Select a track</div>
+                    <div id="np-artist">Nuovo Espresso</div>
+                </div>
+            </div>
+
+            <!-- Center: Player Controls -->
+            <div class="player-controls">
+                <div class="control-buttons">
+                    <button id="prev-btn" class="icon-btn">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M13 2.5L5 7.119V3H3v10h2V8.881l8 4.619z"></path></svg>
+                    </button>
+                    
+                    <button id="play-pause-btn" class="play-circle">
+                        <svg id="play-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4.018 14L14.41 8 4.018 2z"></path></svg>
+                        <svg id="pause-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: none;"><path d="M3 2h3v12H3zm7 0h3v12h-3z"></path></svg>
+                    </button>
+
+                    <button id="next-btn" class="icon-btn">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11 3v4.119L3 2.5v11l8-4.619V13h2V3z"></path></svg>
+                    </button>
+                </div>
+                
+                <div class="progress-container">
+                    <span id="current-time">0:00</span>
+                    <input type="range" id="seek-bar" value="0" min="0" step="1">
+                    <span id="total-time">0:00</span>
+                </div>
+            </div>
+
+            <!-- Right: Volume -->
+            <div class="volume-controls">
+                <button id="mute-btn" class="icon-btn">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M12.945 1.379l-.652.763c1.577 1.462 2.57 3.544 2.57 5.858s-.994 4.396-2.57 5.858l.651.763a8.966 8.966 0 002.918-6.621 8.966 8.966 0 00-2.917-6.621z"></path><path d="M10.598 3.692l-.63.782a6.027 6.027 0 011.896 4.526c0 1.737-.738 3.315-1.897 4.526l.63.782A7.027 7.027 0 0012.86 8a7.027 7.027 0 00-2.262-4.308zM7.18 1.493L3.892 4H1.5A.5.5 0 001 4.5v7a.5.5 0 00.5.5h2.392l3.288 2.507a.5.5 0 00.82-.397V1.89a.5.5 0 00-.82-.397z"></path></svg>
+                </button>
+                <input type="range" id="volume-bar" min="0" max="1" step="0.01" value="1">
+            </div>
+        </footer>
+
+        <!-- Hidden Audio Element -->
+        <audio id="audio-player"></audio>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
