@@ -4,18 +4,22 @@
 const booksData = {
     book1: {
         title: "Nuovo Espresso 1",
-        folder: "audio/book1/",
-        totalTracks: 68 // <--- Set for 68 tracks
+        folder: "audio/book1/"
     },
     book2: {
         title: "Nuovo Espresso 2",
-        folder: "audio/book2/",
-        totalTracks: 45
+        folder: "audio/book2/"
     }
 };
 
 let currentTrackList = []; // Keeps track of all loaded tracks
 let currentPlayingIndex = -1; // Knows which track number is currently playing
+
+// --- LOCAL STORAGE ---
+const STORAGE_KEYS = {
+    PLAYER_SETTINGS: 'espressoPlayer_settings'
+};
+
 
 // DOM Elements
 const bookSelect = document.getElementById('book-select');
@@ -37,47 +41,67 @@ const currentTimeDisplay = document.getElementById('current-time');
 const totalTimeDisplay = document.getElementById('total-time');
 const volumeBar = document.getElementById('volume-bar');
 const muteBtn = document.getElementById('mute-btn');
+const speedBtn = document.getElementById('speed-btn');
+const muteIcon = muteBtn.querySelector('svg'); // Get the SVG icon inside the mute button
+let lastVolume = 1; // To remember volume before mute
+
+const playbackSpeeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
+let currentSpeedIndex = 1; // Corresponds to 1x speed
 
 // --- LOAD TRACK LIST ---
 
-function loadTracks(bookKey) {
+async function loadTracks(bookKey) {
     const book = booksData[bookKey];
     trackList.innerHTML = '';
     playlistTitle.textContent = book.title;
-    trackCount.textContent = book.totalTracks;
-    
     currentTrackList = []; // reset internal list
 
-    for (let i = 1; i <= book.totalTracks; i++) {
-        const li = document.createElement('li');
-        
-        const trackNumberFormatted = String(i).padStart(2, '0');
-        const fileName = `T_${trackNumberFormatted}.mp3`; 
-        const trackTitle = `Track ${trackNumberFormatted}`;
-        const trackSrc = `${book.folder}${fileName}`;
+    try {
+        const response = await fetch(`${book.folder}manifest.json`);
+        if (!response.ok) {
+            throw new Error(`Manifest not found for ${book.title}. Please create a 'manifest.json' file in the '${book.folder}' directory.`);
+        }
+        const trackFiles = await response.json();
 
-        // Save into our internal array so Next/Prev buttons know what to play
-        currentTrackList.push({
-            index: i - 1,
-            title: trackTitle,
-            fileName: fileName,
-            src: trackSrc
+        trackCount.textContent = trackFiles.length;
+    
+        trackFiles.forEach((fileName, index) => {
+            const li = document.createElement('li');
+            
+            const trackTitle = `Track ${String(index + 1).padStart(2, '0')}`;
+            const trackSrc = `${book.folder}${fileName}`;
+
+            // Save into our internal array so Next/Prev buttons know what to play
+            currentTrackList.push({
+                index: index,
+                title: trackTitle,
+                fileName: fileName,
+                src: trackSrc
+            });
+            
+            // Build the Row structure
+            li.innerHTML = `
+                <div class="col-num">${index + 1}</div>
+                <div class="col-title">${trackTitle}</div>
+                <div class="col-file">${fileName}</div>
+            `;
+            
+            li.dataset.index = index;
+
+            li.addEventListener('click', function() {
+                playTrack(parseInt(this.dataset.index));
+            });
+
+            trackList.appendChild(li);
         });
-        
-        // Build the Row structure
-        li.innerHTML = `
-            <div class="col-num">${i}</div>
-            <div class="col-title">${trackTitle}</div>
-            <div class="col-file">${fileName}</div>
-        `;
-        
-        li.dataset.index = i - 1;
-
-        li.addEventListener('click', function() {
-            playTrack(parseInt(this.dataset.index));
-        });
-
-        trackList.appendChild(li);
+    } catch (error) {
+        console.error(error);
+        let displayMessage = error.message;
+        if (bookKey === 'book2' && error.message.includes("Manifest not found")) {
+            displayMessage = `${book.title} is not yet available.`;
+        }
+        trackList.innerHTML = `<li style="color: #ff4d4d; background: rgba(255,0,0,0.1);">${displayMessage}</li>`;
+        trackCount.textContent = 0;
     }
 }
 
@@ -102,7 +126,6 @@ function playTrack(index) {
     npCover.style.opacity = 1; // Reveal the cover art thumbnail
     
     audioPlayer.play();
-    updatePlayPauseUI(true);
 }
 
 // Format seconds to M:SS
@@ -123,6 +146,12 @@ function updatePlayPauseUI(isPlaying) {
     }
 }
 
+function updateRangeFill(input) {
+    const progress = (input.value / input.max) * 100;
+    input.style.setProperty('--progress-percent', `${progress}%`);
+}
+
+
 // --- EVENT LISTENERS ---
 
 // Play/Pause
@@ -135,10 +164,8 @@ playPauseBtn.addEventListener('click', () => {
     
     if (audioPlayer.paused) {
         audioPlayer.play();
-        updatePlayPauseUI(true);
     } else {
         audioPlayer.pause();
-        updatePlayPauseUI(false);
     }
 });
 
@@ -162,34 +189,67 @@ audioPlayer.addEventListener('ended', () => {
     playTrack(currentPlayingIndex + 1);
 });
 
+// Update UI based on actual audio events
+audioPlayer.addEventListener('play', () => updatePlayPauseUI(true));
+audioPlayer.addEventListener('pause', () => updatePlayPauseUI(false));
+
+// Handle cases where an audio file might be missing
+audioPlayer.addEventListener('error', () => {
+    console.error(`Failed to load track: ${audioPlayer.currentSrc}`);
+    nextBtn.click(); // Attempt to play the next track automatically
+});
+
 // Seek Bar Updates
 audioPlayer.addEventListener('timeupdate', () => {
     seekBar.value = audioPlayer.currentTime;
+    updateRangeFill(seekBar);
     currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
 });
 
 audioPlayer.addEventListener('loadedmetadata', () => {
     seekBar.max = audioPlayer.duration;
+    updateRangeFill(seekBar);
     totalTimeDisplay.textContent = formatTime(audioPlayer.duration);
 });
 
 seekBar.addEventListener('input', () => {
     audioPlayer.currentTime = seekBar.value;
+    updateRangeFill(seekBar);
 });
 
 // Volume Controls
 volumeBar.addEventListener('input', () => {
+    lastVolume = volumeBar.value;
     audioPlayer.volume = volumeBar.value;
     audioPlayer.muted = false;
+    updateRangeFill(volumeBar);
 });
 
 muteBtn.addEventListener('click', () => {
     audioPlayer.muted = !audioPlayer.muted;
-    if (audioPlayer.muted) {
-        volumeBar.value = 0;
-    } else {
-        volumeBar.value = audioPlayer.volume || 1;
+});
+
+audioPlayer.addEventListener('volumechange', () => {
+    // Update UI based on volume changes, including mute
+    volumeBar.value = audioPlayer.muted ? 0 : audioPlayer.volume;
+    updateRangeFill(volumeBar);
+    muteIcon.style.fill = audioPlayer.muted || audioPlayer.volume === 0 ? 'var(--brand-green)' : 'currentColor';
+    if (!audioPlayer.muted) {
+        lastVolume = audioPlayer.volume;
     }
+    saveSettings();
+});
+
+// Playback Speed Control
+speedBtn.addEventListener('click', () => {
+    // Cycle to the next speed
+    currentSpeedIndex = (currentSpeedIndex + 1) % playbackSpeeds.length;
+    const newSpeed = playbackSpeeds[currentSpeedIndex];
+    
+    audioPlayer.playbackRate = newSpeed;
+    speedBtn.textContent = `${newSpeed}x`;
+    
+    saveSettings();
 });
 
 // Handle Book Change via Dropdown
@@ -205,6 +265,38 @@ bookSelect.addEventListener('change', (e) => {
     totalTimeDisplay.textContent = "0:00";
 });
 
+// --- PERSISTENCE (LOCAL STORAGE) ---
+
+function saveSettings() {
+    const settings = {
+        volume: audioPlayer.volume,
+        muted: audioPlayer.muted,
+        speed: audioPlayer.playbackRate
+    };
+    localStorage.setItem(STORAGE_KEYS.PLAYER_SETTINGS, JSON.stringify(settings));
+}
+
+function loadSettings() {
+    const savedSettings = localStorage.getItem(STORAGE_KEYS.PLAYER_SETTINGS);
+    if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        
+        // Restore Volume and Mute state
+        audioPlayer.volume = settings.volume ?? 1;
+        audioPlayer.muted = settings.muted ?? false;
+
+        // Restore Playback Speed
+        const savedSpeed = settings.speed ?? 1;
+        currentSpeedIndex = playbackSpeeds.indexOf(savedSpeed);
+        if (currentSpeedIndex === -1) currentSpeedIndex = 1; // Default to 1x if not found
+        
+        audioPlayer.playbackRate = playbackSpeeds[currentSpeedIndex];
+        speedBtn.textContent = `${playbackSpeeds[currentSpeedIndex]}x`;
+    }
+    updateRangeFill(volumeBar);
+    updateRangeFill(seekBar);
+}
+
 // Init on first load
 loadTracks('book1');
-audioPlayer.volume = 1;
+loadSettings(); // Load user settings from previous session

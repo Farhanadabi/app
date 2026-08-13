@@ -1,13 +1,15 @@
 :root {
-    --bg-base: #121212;
-    --bg-sidebar: #000000;
-    --bg-player: #181818;
-    --bg-elevated: #282828;
+    --bg-base: #f4f4f4;
+    --bg-glass: rgba(255, 255, 255, 0.5); /* Semi-transparent background for glass effect */
+    --bg-sidebar: rgba(248, 248, 248, 0.7);
+    --bg-player: var(--bg-glass);
+    --bg-elevated: #ffffff;
     
-    --text-main: #ffffff;
-    --text-sub: #b3b3b3;
+    --text-main: #000000;
+    --text-sub: #666666;
     
     --brand-green: #1DB954;
+    --border-color: rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -18,7 +20,7 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: var(--bg-base);
+    background-color: #E0E0E0; /* A slightly darker background to see the app wrapper */
     color: var(--text-main);
     height: 100vh;
     overflow: hidden; 
@@ -29,6 +31,7 @@ body {
 
 .app-wrapper {
     display: flex;
+    background-color: var(--bg-base);
     flex-direction: column;
     height: 100vh;
 }
@@ -42,9 +45,12 @@ body {
 /* Sidebar */
 .sidebar {
     width: 240px;
-    background-color: var(--bg-sidebar);
+    background-color: var(--bg-sidebar); /* Fallback for older browsers */
+    background-color: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px); /* For Safari */
     padding: 24px;
-    display: flex;
+    border-right: 1px solid var(--border-color);
     flex-direction: column;
     gap: 30px;
 }
@@ -82,14 +88,14 @@ body {
 /* Main Content Area */
 .content-view {
     flex: 1;
-    background: linear-gradient(180deg, #333333 0%, var(--bg-base) 30%);
+    background: linear-gradient(180deg, #b3d1ff 0%, var(--bg-base) 40%);
     overflow-y: auto;
     padding: 24px;
 }
 
 .content-view::-webkit-scrollbar { width: 12px; }
 .content-view::-webkit-scrollbar-track { background: transparent; }
-.content-view::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.3); }
+.content-view::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.2); }
 
 .playlist-header {
     display: flex;
@@ -102,7 +108,7 @@ body {
 .playlist-cover {
     width: 192px;
     height: 192px;
-    background: linear-gradient(135deg, #450af5, #c4efd9);
+    background: linear-gradient(135deg, #007BFF, #86B8F3);
     box-shadow: 0 4px 60px rgba(0,0,0,0.5);
     display: flex;
     justify-content: center;
@@ -110,6 +116,7 @@ body {
     font-size: 64px;
     font-weight: 700;
     flex-shrink: 0;
+    color: white;
 }
 
 .playlist-info span { font-size: 12px; font-weight: 700; }
@@ -124,7 +131,7 @@ body {
     color: var(--text-sub);
     font-size: 12px;
     text-transform: uppercase;
-    border-bottom: 1px solid #282828;
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 10px;
 }
 
@@ -136,18 +143,26 @@ body {
     border-radius: 4px;
     cursor: pointer;
     color: var(--text-sub);
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
     align-items: center;
 }
 
-.track-list li:hover { background-color: rgba(255, 255, 255, 0.1); color: var(--text-main); }
+.track-list li:hover { background-color: rgba(0, 0, 0, 0.05); color: var(--text-main); }
 .col-title { color: var(--text-main); font-weight: 500; }
-.track-list li.active-track .col-title { color: var(--brand-green); }
+
+.track-list li.active-track {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+.track-list li.active-track .col-num { color: var(--brand-green); }
+.track-list li.active-track .col-title { color: var(--brand-green); font-weight: 700; }
 
 /* Bottom Player */
 .bottom-player {
     height: 90px;
-    background-color: var(--bg-player);
-    border-top: 1px solid #282828;
+    background-color: var(--bg-player); /* Fallback for older browsers */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px); /* For Safari */
+    border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -157,42 +172,71 @@ body {
 .now-playing { width: 30%; display: flex; align-items: center; gap: 14px; }
 .np-cover {
     width: 56px; height: 56px;
-    background: linear-gradient(135deg, #450af5, #c4efd9);
+    background: linear-gradient(135deg, #007BFF, #86B8F3);
     display: flex; justify-content: center; align-items: center;
     font-size: 16px; font-weight: bold; border-radius: 4px;
+    color: white;
 }
 #np-title { font-size: 14px; font-weight: 500; color: var(--text-main); margin-bottom: 4px; }
 #np-artist { font-size: 12px; color: var(--text-sub); }
 
 .player-controls { width: 40%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .control-buttons { display: flex; align-items: center; gap: 20px; }
-.icon-btn { background: none; border: none; color: var(--text-sub); cursor: pointer; }
-.icon-btn:hover { color: var(--text-main); }
+.icon-btn {
+    background: none; border: none; color: var(--text-sub); cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.icon-btn:hover { color: var(--text-main); transform: scale(1.1); }
 
 .play-circle {
     width: 32px; height: 32px;
-    background-color: var(--text-main); color: black;
+    background-color: var(--text-main); color: var(--bg-base);
     border: none; border-radius: 50%;
     display: flex; justify-content: center; align-items: center; cursor: pointer;
 }
-.play-circle:hover { background-color: var(--brand-green); color: white; transform: scale(1.05); }
-
+.play-circle:hover { transform: scale(1.05); }
+ 
 .progress-container {
     display: flex; align-items: center; gap: 10px;
     width: 100%; max-width: 600px; font-size: 11px; color: var(--text-sub);
 }
 
 .volume-controls { width: 30%; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
-input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: #535353; border-radius: 2px; cursor: pointer; }
+input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 4px;
+    background: linear-gradient(to right, var(--brand-green) var(--progress-percent, 0%), #ccc var(--progress-percent, 0%));
+    border-radius: 2px; cursor: pointer;
+}
 .volume-controls input[type=range] { width: 100px; }
 input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none; height: 12px; width: 12px;
-    background: var(--text-main); border-radius: 50%;
+    background: var(--text-sub); border-radius: 50%;
     opacity: 0; transition: opacity 0.2s;
 }
-input[type=range]:hover::-webkit-slider-thumb { opacity: 1; }
-input[type=range]:hover { background: var(--brand-green); }
+input[type=range]:hover::-webkit-slider-thumb { opacity: 1; background: var(--text-main); }
+/* Firefox Thumb */
+input[type=range]::-moz-range-thumb {
+    height: 12px; width: 12px;
+    background: var(--text-sub); border-radius: 50%; border: none;
+    opacity: 0; transition: opacity 0.2s;
+}
+input[type=range]:hover::-moz-range-thumb { opacity: 1; background: var(--text-main); }
+/* Firefox Track */
+input[type=range]::-moz-range-track { background: transparent; /* Handled by the main element's background */ }
 
+.player-btn {
+    background-color: transparent;
+    color: var(--text-sub);
+    border: none;
+    border-radius: 4px;
+    padding: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.player-btn:hover { color: var(--text-main); transform: scale(1.1); }
 
 /* =========================================
    RESPONSIVE DESIGN (MOBILE & TABLET)
@@ -209,8 +253,8 @@ input[type=range]:hover { background: var(--brand-green); }
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        gap: 16px;
-        border-bottom: 1px solid #282828;
+        gap: 16px; 
+        border-bottom: 1px solid var(--border-color);
     }
 
     .menu-section { margin: 0; }
@@ -249,6 +293,10 @@ input[type=range]:hover { background: var(--brand-green); }
     .control-buttons { gap: 30px; } /* Spread buttons out for fat thumbs */
     .play-circle { width: 44px; height: 44px; } /* Larger play button for touch */
 
-    /* Hide volume slider (Mobile users use hardware buttons) */
-    .volume-controls { display: none; }
+    /* On mobile, keep mute and speed controls, but hide the volume slider */
+    .volume-controls {
+        width: 100%;
+        justify-content: center;
+    }
+    .volume-controls input[type=range] { display: none; }
 }
