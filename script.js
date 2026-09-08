@@ -4,11 +4,13 @@
 const booksData = {
     book1: {
         title: "Nuovo Espresso 1",
-        folder: "audio/book1/"
+        folder: "audio/book1/",
+        videoFolder: "video/book1/"
     },
     book2: {
         title: "Nuovo Espresso 2",
-        folder: "audio/book2/"
+        folder: "audio/book2/",
+        videoFolder: "video/book2/"
     }
 };
 
@@ -114,12 +116,20 @@ async function loadTracks(bookKey) {
     }
 }
 
-async function loadVideos() {
+async function loadVideos(bookKey) {
+    const book = booksData[bookKey];
     videoList.innerHTML = '';
     currentVideoList = [];
+    currentVideoIndex = -1;
+    videoPlayer.pause();
+    videoPlayer.removeAttribute('src');
+    videoPlayer.load();
+    videoEmpty.hidden = false;
+    videoEmpty.querySelector('h2').textContent = `${book.title} videos`;
+    videoEmpty.querySelector('p').textContent = `Add video file names to ${book.videoFolder}manifest.json to start watching.`;
 
     try {
-        const response = await fetch('video/manifest.json');
+        const response = await fetch(`${book.videoFolder}manifest.json`);
         if (!response.ok) throw new Error('Video manifest not found.');
 
         const videos = await response.json();
@@ -130,7 +140,7 @@ async function loadVideos() {
                 fileName,
                 title: typeof video === 'string' ? `Lesson ${String(index + 1).padStart(2, '0')}` : video.title,
                 description: typeof video === 'string' ? 'Italian video lesson' : (video.description || 'Italian video lesson'),
-                src: `video/${fileName}`
+                src: `${book.videoFolder}${fileName}`
             };
         });
 
@@ -159,7 +169,7 @@ async function loadVideos() {
         videoCount.textContent = 0;
         videoEmpty.hidden = false;
         videoEmpty.querySelector('h2').textContent = 'Video library unavailable';
-        videoEmpty.querySelector('p').textContent = 'Add a video/manifest.json file to enable video lessons.';
+        videoEmpty.querySelector('p').textContent = `Add ${book.videoFolder}manifest.json to enable video lessons.`;
     }
 }
 
@@ -186,7 +196,7 @@ mediaTabs.forEach((tab) => {
         });
         audioView.hidden = isVideo;
         videoView.hidden = !isVideo;
-        if (isVideo && currentVideoList.length === 0) loadVideos();
+        if (isVideo && currentVideoList.length === 0) loadVideos(bookSelect.value);
         if (isVideo) audioPlayer.pause();
         if (!isVideo) videoPlayer.pause();
     });
@@ -351,6 +361,7 @@ speedBtn.addEventListener('click', () => {
 // Handle Book Change via Dropdown
 bookSelect.addEventListener('change', (e) => {
     loadTracks(e.target.value);
+    loadVideos(e.target.value);
     audioPlayer.pause();
     updatePlayPauseUI(false);
     npTitle.textContent = "Select a track";
