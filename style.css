@@ -44,6 +44,7 @@ body {
 
 /* Sidebar */
 .sidebar {
+    display: flex;
     width: 240px;
     background-color: var(--bg-sidebar); /* Fallback for older browsers */
     background-color: var(--bg-glass);
@@ -84,6 +85,16 @@ body {
     outline: none;
     cursor: pointer;
 }
+
+.media-switcher { display: grid; gap: 6px; }
+.media-tab {
+    background: transparent; border: 0; border-radius: 6px; color: var(--text-sub);
+    cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; padding: 11px 12px;
+    text-align: left; transition: background-color 0.2s ease, color 0.2s ease;
+}
+.media-tab span { display: inline-block; margin-right: 8px; text-align: center; width: 16px; }
+.media-tab:hover { background: rgba(0, 0, 0, 0.05); color: var(--text-main); }
+.media-tab.active { background: var(--text-main); color: var(--bg-base); }
 
 /* Main Content Area */
 .content-view {
@@ -155,6 +166,38 @@ body {
 }
 .track-list li.active-track .col-num { color: var(--brand-green); }
 .track-list li.active-track .col-title { color: var(--brand-green); font-weight: 700; }
+
+/* Video Library */
+.video-view { background: linear-gradient(145deg, #d9e9ff 0%, var(--bg-base) 48%); }
+.video-header, .video-toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.video-header { margin: 8px 0 26px; }
+.eyebrow { color: var(--text-sub); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; }
+.video-header h1 { font-size: clamp(38px, 6vw, 68px); line-height: 1; margin: 9px 0 12px; }
+.video-header p { color: var(--text-sub); font-size: 14px; }
+.video-count { align-items: flex-end; display: flex; flex-direction: column; color: var(--text-sub); font-size: 12px; }
+.video-count strong { color: var(--text-main); font-size: 38px; line-height: 1; }
+.video-stage { background: #101419; border-radius: 8px; box-shadow: 0 18px 46px rgba(25, 48, 78, 0.2); min-height: 280px; overflow: hidden; position: relative; }
+.video-stage video { aspect-ratio: 16 / 9; display: block; height: auto; max-height: 62vh; object-fit: contain; width: 100%; }
+.video-empty { align-items: center; color: #eaf2fc; display: flex; flex-direction: column; inset: 0; justify-content: center; padding: 40px 20px; position: absolute; text-align: center; }
+.video-empty[hidden] { display: none; }
+.video-empty-icon, .video-thumb { align-items: center; background: var(--brand-green); border-radius: 50%; color: #fff; display: flex; justify-content: center; }
+.video-empty-icon { font-size: 20px; height: 56px; margin-bottom: 18px; padding-left: 3px; width: 56px; }
+.video-empty h2 { font-size: 22px; margin-bottom: 8px; }
+.video-empty p { color: #9daaba; font-size: 13px; }
+.video-empty strong { color: #d9e9ff; }
+.video-toolbar { border-bottom: 1px solid var(--border-color); margin: 30px 0 12px; padding-bottom: 12px; }
+.video-toolbar h2 { font-size: 22px; margin-top: 6px; }
+.video-format-note { color: var(--text-sub); font-size: 11px; }
+.video-list { display: grid; gap: 8px; list-style: none; }
+.video-card { border-radius: 6px; transition: background-color 0.2s ease; }
+.video-card:hover, .video-card.active-video { background: rgba(0, 123, 255, 0.09); }
+.video-card-button { align-items: center; background: none; border: 0; color: inherit; cursor: pointer; display: flex; gap: 14px; padding: 12px; text-align: left; width: 100%; }
+.video-thumb { flex-shrink: 0; font-size: 12px; height: 38px; padding-left: 2px; width: 38px; }
+.video-card-copy { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
+.video-card-copy strong { color: var(--text-main); font-size: 14px; }
+.video-card-copy small, .video-file { color: var(--text-sub); font-size: 12px; }
+.video-file { max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.video-error { background: rgba(255, 77, 77, 0.12); }
 
 /* Bottom Player */
 .bottom-player {
@@ -260,6 +303,9 @@ input[type=range]::-moz-range-track { background: transparent; /* Handled by the
     .menu-section { margin: 0; }
     .menu-label { display: none; } /* Hide "Your Library" */
     .book-dropdown { padding: 8px; font-size: 14px; }
+    .media-switcher { display: flex; gap: 4px; }
+    .media-tab { padding: 8px 10px; }
+    .media-tab span { margin-right: 4px; }
 
     /* Adjust Playlist Header */
     .content-view { padding: 16px; }
@@ -271,6 +317,11 @@ input[type=range]::-moz-range-track { background: transparent; /* Handled by the
     }
     .playlist-cover { width: 140px; height: 140px; font-size: 48px; }
     .playlist-info h1 { font-size: 32px; }
+    .video-header { align-items: flex-start; }
+    .video-header h1 { font-size: 40px; }
+    .video-stage { min-height: 210px; }
+    .video-toolbar { align-items: flex-start; }
+    .video-format-note, .video-file { display: none; }
 
     /* Adjust Tracklist (Hide File Name Column to save space) */
     .tracklist-header { grid-template-columns: 40px 1fr; }

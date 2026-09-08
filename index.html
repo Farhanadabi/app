@@ -28,10 +28,19 @@
                         <option value="book2">Nuovo Espresso 2</option>
                     </select>
                 </div>
+
+                <div class="media-switcher" role="tablist" aria-label="Media type">
+                    <button class="media-tab active" data-view="audio-view" role="tab" aria-selected="true">
+                        <span aria-hidden="true">&#9835;</span> Audio
+                    </button>
+                    <button class="media-tab" data-view="video-view" role="tab" aria-selected="false">
+                        <span aria-hidden="true">&#9654;</span> Video
+                    </button>
+                </div>
             </nav>
 
             <!-- Main Tracklist Area -->
-            <main class="content-view">
+            <main class="content-view" id="audio-view" role="tabpanel">
                 <header class="playlist-header">
                     <div class="playlist-cover">NE</div>
                     <div class="playlist-info">
@@ -52,6 +61,37 @@
                     <!-- Tracks go here -->
                     <ul id="track-list" class="track-list"></ul>
                 </div>
+            </main>
+
+            <main class="content-view video-view" id="video-view" role="tabpanel" hidden>
+                <header class="video-header">
+                    <div>
+                        <span class="eyebrow">VISUAL LESSONS</span>
+                        <h1>Video Library</h1>
+                        <p>Watch lessons and practice Italian with video.</p>
+                    </div>
+                    <div class="video-count"><strong id="video-count">0</strong><span>videos</span></div>
+                </header>
+
+                <section class="video-stage" aria-label="Video player">
+                    <video id="video-player" controls preload="metadata" playsinline>
+                        Your browser does not support HTML5 video.
+                    </video>
+                    <div class="video-empty" id="video-empty">
+                        <div class="video-empty-icon" aria-hidden="true">&#9654;</div>
+                        <h2>Your video library is ready</h2>
+                        <p>Add video file names to <strong>video/manifest.json</strong> to start watching.</p>
+                    </div>
+                </section>
+
+                <div class="video-toolbar">
+                    <div>
+                        <span class="eyebrow">YOUR COLLECTION</span>
+                        <h2>Lessons</h2>
+                    </div>
+                    <span class="video-format-note">MP4 &bull; WebM &bull; OGG</span>
+                </div>
+                <ul id="video-list" class="video-list" aria-live="polite"></ul>
             </main>
         </div>
 

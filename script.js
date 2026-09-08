@@ -14,6 +14,8 @@ const booksData = {
 
 let currentTrackList = []; // Keeps track of all loaded tracks
 let currentPlayingIndex = -1; // Knows which track number is currently playing
+let currentVideoList = [];
+let currentVideoIndex = -1;
 
 // --- LOCAL STORAGE ---
 const STORAGE_KEYS = {
@@ -25,6 +27,13 @@ const STORAGE_KEYS = {
 const bookSelect = document.getElementById('book-select');
 const trackList = document.getElementById('track-list');
 const audioPlayer = document.getElementById('audio-player');
+const videoPlayer = document.getElementById('video-player');
+const videoList = document.getElementById('video-list');
+const videoCount = document.getElementById('video-count');
+const videoEmpty = document.getElementById('video-empty');
+const audioView = document.getElementById('audio-view');
+const videoView = document.getElementById('video-view');
+const mediaTabs = document.querySelectorAll('.media-tab');
 const playlistTitle = document.getElementById('playlist-title');
 const trackCount = document.getElementById('track-count');
 
@@ -104,6 +113,93 @@ async function loadTracks(bookKey) {
         trackCount.textContent = 0;
     }
 }
+
+async function loadVideos() {
+    videoList.innerHTML = '';
+    currentVideoList = [];
+
+    try {
+        const response = await fetch('video/manifest.json');
+        if (!response.ok) throw new Error('Video manifest not found.');
+
+        const videos = await response.json();
+        currentVideoList = videos.map((video, index) => {
+            const fileName = typeof video === 'string' ? video : video.file;
+            return {
+                index,
+                fileName,
+                title: typeof video === 'string' ? `Lesson ${String(index + 1).padStart(2, '0')}` : video.title,
+                description: typeof video === 'string' ? 'Italian video lesson' : (video.description || 'Italian video lesson'),
+                src: `video/${fileName}`
+            };
+        });
+
+        videoCount.textContent = currentVideoList.length;
+        videoEmpty.hidden = currentVideoList.length > 0;
+
+        currentVideoList.forEach((video) => {
+            const li = document.createElement('li');
+            li.className = 'video-card';
+            li.dataset.index = video.index;
+            li.innerHTML = `
+                <button class="video-card-button" type="button" aria-label="Play ${video.title}">
+                    <span class="video-thumb" aria-hidden="true">&#9654;</span>
+                    <span class="video-card-copy">
+                        <strong>${video.title}</strong>
+                        <small>${video.description}</small>
+                    </span>
+                    <span class="video-file">${video.fileName}</span>
+                </button>
+            `;
+            li.addEventListener('click', () => playVideo(video.index));
+            videoList.appendChild(li);
+        });
+    } catch (error) {
+        console.error(error);
+        videoCount.textContent = 0;
+        videoEmpty.hidden = false;
+        videoEmpty.querySelector('h2').textContent = 'Video library unavailable';
+        videoEmpty.querySelector('p').textContent = 'Add a video/manifest.json file to enable video lessons.';
+    }
+}
+
+function playVideo(index) {
+    if (index < 0 || index >= currentVideoList.length) return;
+
+    currentVideoIndex = index;
+    const videoData = currentVideoList[index];
+    videoPlayer.src = videoData.src;
+    videoEmpty.hidden = true;
+    videoList.querySelectorAll('.video-card').forEach((card, cardIndex) => {
+        card.classList.toggle('active-video', cardIndex === index);
+    });
+    videoPlayer.play().catch(() => {});
+}
+
+mediaTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+        const isVideo = tab.dataset.view === 'video-view';
+        mediaTabs.forEach((item) => {
+            const active = item === tab;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-selected', active);
+        });
+        audioView.hidden = isVideo;
+        videoView.hidden = !isVideo;
+        if (isVideo && currentVideoList.length === 0) loadVideos();
+        if (isVideo) audioPlayer.pause();
+        if (!isVideo) videoPlayer.pause();
+    });
+});
+
+videoPlayer.addEventListener('ended', () => {
+    if (currentVideoIndex + 1 < currentVideoList.length) playVideo(currentVideoIndex + 1);
+});
+
+videoPlayer.addEventListener('error', () => {
+    const card = videoList.querySelector(`[data-index="${currentVideoIndex}"]`);
+    if (card) card.classList.add('video-error');
+});
 
 // --- PLAYBACK LOGIC ---
 
