@@ -23,10 +23,28 @@
                 
                 <div class="menu-section">
                     <p class="menu-label">Your Library</p>
-                    <select id="book-select" class="book-dropdown">
-                        <option value="book1">Nuovo Espresso 1</option>
-                        <option value="book2">Nuovo Espresso 2</option>
-                    </select>
+                    <div class="book-picker">
+                        <!-- <span class="book-picker-icon" aria-hidden="true">&#128218;</span> -->
+                        <button id="book-trigger" class="book-dropdown" type="button" aria-haspopup="listbox" aria-expanded="false">
+                            Nuovo Espresso 1
+                        </button>
+                        <div id="book-options" class="book-options" role="listbox" aria-label="Choose a book">
+                            <button type="button" role="option" data-value="book1" aria-selected="true">Nuovo Espresso 1</button>
+                            <button type="button" role="option" data-value="book2" aria-selected="false">Nuovo Espresso 2</button>
+                            <button type="button" role="option" data-value="book3" aria-selected="false">Nuovo Espresso 3</button>
+                            <button type="button" role="option" data-value="book4" aria-selected="false">Nuovo Espresso 4</button>
+                            <button type="button" role="option" data-value="book5" aria-selected="false">Nuovo Espresso 5</button>
+                            <button type="button" role="option" data-value="book6" aria-selected="false">Nuovo Espresso 6</button>
+                        </div>
+                        <select id="book-select" class="book-select-native" aria-hidden="true" tabindex="-1">
+                            <option value="book1">Nuovo Espresso 1</option>
+                            <option value="book2">Nuovo Espresso 2</option>
+                            <option value="book3">Nuovo Espresso 3</option>
+                            <option value="book4">Nuovo Espresso 4</option>
+                            <option value="book5">Nuovo Espresso 5</option>
+                            <option value="book6">Nuovo Espresso 6</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="media-switcher" role="tablist" aria-label="Media type">

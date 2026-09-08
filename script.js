@@ -5,12 +5,38 @@ const booksData = {
     book1: {
         title: "Nuovo Espresso 1",
         folder: "audio/book1/",
-        videoFolder: "video/book1/"
+        videoFolder: "video/book1/",
+        hasVideo: true
     },
     book2: {
         title: "Nuovo Espresso 2",
         folder: "audio/book2/",
-        videoFolder: "video/book2/"
+        videoFolder: "video/book2/",
+        hasVideo: true
+    },
+    book3: {
+        title: "Nuovo Espresso 3",
+        folder: "audio/book3/",
+        videoFolder: "video/book3/",
+        hasVideo: true
+    },
+    book4: {
+        title: "Nuovo Espresso 4",
+        folder: "audio/book4/",
+        videoFolder: "video/book4/",
+        hasVideo: false
+    },
+    book5: {
+        title: "Nuovo Espresso 5",
+        folder: "audio/book5/",
+        videoFolder: "video/book5/",
+        hasVideo: false
+    },
+    book6: {
+        title: "Nuovo Espresso 6",
+        folder: "audio/book6/",
+        videoFolder: "video/book6/",
+        hasVideo: false
     }
 };
 
@@ -27,6 +53,8 @@ const STORAGE_KEYS = {
 
 // DOM Elements
 const bookSelect = document.getElementById('book-select');
+const bookTrigger = document.getElementById('book-trigger');
+const bookOptions = document.getElementById('book-options');
 const trackList = document.getElementById('track-list');
 const audioPlayer = document.getElementById('audio-player');
 const videoPlayer = document.getElementById('video-player');
@@ -38,6 +66,39 @@ const videoView = document.getElementById('video-view');
 const mediaTabs = document.querySelectorAll('.media-tab');
 const playlistTitle = document.getElementById('playlist-title');
 const trackCount = document.getElementById('track-count');
+
+function setBookPicker(bookKey) {
+    const selectedOption = bookOptions.querySelector(`[data-value="${bookKey}"]`);
+    if (!selectedOption) return;
+
+    bookSelect.value = bookKey;
+    bookTrigger.textContent = selectedOption.textContent;
+    bookTrigger.setAttribute('aria-expanded', 'false');
+    bookOptions.classList.remove('open');
+    bookOptions.querySelectorAll('[role="option"]').forEach((option) => {
+        option.setAttribute('aria-selected', option === selectedOption);
+    });
+}
+
+bookTrigger.addEventListener('click', () => {
+    const isOpen = bookOptions.classList.toggle('open');
+    bookTrigger.setAttribute('aria-expanded', isOpen);
+});
+
+bookOptions.querySelectorAll('[role="option"]').forEach((option) => {
+    option.addEventListener('click', () => {
+        const bookKey = option.dataset.value;
+        setBookPicker(bookKey);
+        bookSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+});
+
+document.addEventListener('click', (event) => {
+    if (!event.target.closest('.book-picker')) {
+        bookTrigger.setAttribute('aria-expanded', 'false');
+        bookOptions.classList.remove('open');
+    }
+});
 
 // Bottom Player UI
 const npCover = document.getElementById('np-cover');
@@ -128,6 +189,13 @@ async function loadVideos(bookKey) {
     videoEmpty.querySelector('h2').textContent = `${book.title} videos`;
     videoEmpty.querySelector('p').textContent = `Add video file names to ${book.videoFolder}manifest.json to start watching.`;
 
+    if (!book.hasVideo) {
+        videoCount.textContent = 0;
+        videoEmpty.querySelector('h2').textContent = `${book.title} has no videos`;
+        videoEmpty.querySelector('p').textContent = 'Video lessons are not available for this book.';
+        return;
+    }
+
     try {
         const response = await fetch(`${book.videoFolder}manifest.json`);
         if (!response.ok) throw new Error('Video manifest not found.');
@@ -138,8 +206,7 @@ async function loadVideos(bookKey) {
             return {
                 index,
                 fileName,
-                title: typeof video === 'string' ? `Lesson ${String(index + 1).padStart(2, '0')}` : video.title,
-                description: typeof video === 'string' ? 'Italian video lesson' : (video.description || 'Italian video lesson'),
+                title: typeof video === 'string' ? `Video ${String(index + 1).padStart(2, '0')}` : video.title,
                 src: `${book.videoFolder}${fileName}`
             };
         });
@@ -156,9 +223,8 @@ async function loadVideos(bookKey) {
                     <span class="video-thumb" aria-hidden="true">&#9654;</span>
                     <span class="video-card-copy">
                         <strong>${video.title}</strong>
-                        <small>${video.description}</small>
+                        <span class="video-file">${video.fileName}</span>
                     </span>
-                    <span class="video-file">${video.fileName}</span>
                 </button>
             `;
             li.addEventListener('click', () => playVideo(video.index));
