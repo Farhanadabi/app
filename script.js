@@ -110,13 +110,9 @@ const nextBtn = document.getElementById('next-btn');
 const seekBar = document.getElementById('seek-bar');
 const currentTimeDisplay = document.getElementById('current-time');
 const totalTimeDisplay = document.getElementById('total-time');
-const volumeBar = document.getElementById('volume-bar');
-const muteBtn = document.getElementById('mute-btn');
 const speedBtn = document.getElementById('speed-btn');
 const speedOptions = document.getElementById('speed-options');
 const speedButtons = document.querySelectorAll('.speed-option');
-const muteIcon = muteBtn.querySelector('svg'); // Get the SVG icon inside the mute button
-let lastVolume = 1; // To remember volume before mute
 
 const playbackSpeeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 let currentSpeedIndex = 3; // Corresponds to 1x speed
@@ -390,29 +386,6 @@ seekBar.addEventListener('input', () => {
     updateRangeFill(seekBar);
 });
 
-// Volume Controls
-volumeBar.addEventListener('input', () => {
-    lastVolume = volumeBar.value;
-    audioPlayer.volume = volumeBar.value;
-    audioPlayer.muted = false;
-    updateRangeFill(volumeBar);
-});
-
-muteBtn.addEventListener('click', () => {
-    audioPlayer.muted = !audioPlayer.muted;
-});
-
-audioPlayer.addEventListener('volumechange', () => {
-    // Update UI based on volume changes, including mute
-    volumeBar.value = audioPlayer.muted ? 0 : audioPlayer.volume;
-    updateRangeFill(volumeBar);
-    muteIcon.style.fill = audioPlayer.muted || audioPlayer.volume === 0 ? 'var(--brand-green)' : 'currentColor';
-    if (!audioPlayer.muted) {
-        lastVolume = audioPlayer.volume;
-    }
-    saveSettings();
-});
-
 function setPlaybackSpeed(speed) {
     const normalized = Number(speed);
     const foundIndex = playbackSpeeds.indexOf(normalized);
@@ -470,8 +443,6 @@ bookSelect.addEventListener('change', (e) => {
 
 function saveSettings() {
     const settings = {
-        volume: audioPlayer.volume,
-        muted: audioPlayer.muted,
         speed: audioPlayer.playbackRate
     };
     localStorage.setItem(STORAGE_KEYS.PLAYER_SETTINGS, JSON.stringify(settings));
@@ -481,10 +452,6 @@ function loadSettings() {
     const savedSettings = localStorage.getItem(STORAGE_KEYS.PLAYER_SETTINGS);
     if (savedSettings) {
         const settings = JSON.parse(savedSettings);
-
-        // Restore Volume and Mute state
-        audioPlayer.volume = settings.volume ?? 1;
-        audioPlayer.muted = settings.muted ?? false;
 
         // Restore Playback Speed
         const savedSpeed = settings.speed ?? 1;
@@ -501,7 +468,6 @@ function loadSettings() {
         button.setAttribute('aria-checked', String(isActive));
     });
 
-    updateRangeFill(volumeBar);
     updateRangeFill(seekBar);
 }
 
