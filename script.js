@@ -110,9 +110,13 @@ const nextBtn = document.getElementById('next-btn');
 const seekBar = document.getElementById('seek-bar');
 const currentTimeDisplay = document.getElementById('current-time');
 const totalTimeDisplay = document.getElementById('total-time');
+const volumeBar = document.getElementById('volume-bar');
+const muteBtn = document.getElementById('mute-btn');
 const speedBtn = document.getElementById('speed-btn');
 const speedOptions = document.getElementById('speed-options');
 const speedButtons = document.querySelectorAll('.speed-option');
+const muteIcon = muteBtn.querySelector('svg');
+let lastVolume = 1;
 
 const playbackSpeeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 let currentSpeedIndex = 3; // Corresponds to 1x speed
@@ -386,6 +390,26 @@ seekBar.addEventListener('input', () => {
     updateRangeFill(seekBar);
 });
 
+volumeBar.addEventListener('input', () => {
+    lastVolume = Number(volumeBar.value);
+    audioPlayer.volume = lastVolume;
+    audioPlayer.muted = false;
+    updateRangeFill(volumeBar);
+});
+
+muteBtn.addEventListener('click', () => {
+    audioPlayer.muted = !audioPlayer.muted;
+});
+
+audioPlayer.addEventListener('volumechange', () => {
+    volumeBar.value = audioPlayer.muted ? 0 : audioPlayer.volume;
+    updateRangeFill(volumeBar);
+    muteBtn.setAttribute('aria-label', audioPlayer.muted ? 'Unmute audio' : 'Mute audio');
+    muteIcon.style.fill = audioPlayer.muted || audioPlayer.volume === 0 ? 'var(--brand-green)' : 'currentColor';
+    if (!audioPlayer.muted) lastVolume = audioPlayer.volume;
+    saveSettings();
+});
+
 function setPlaybackSpeed(speed) {
     const normalized = Number(speed);
     const foundIndex = playbackSpeeds.indexOf(normalized);
@@ -443,6 +467,8 @@ bookSelect.addEventListener('change', (e) => {
 
 function saveSettings() {
     const settings = {
+        volume: audioPlayer.volume,
+        muted: audioPlayer.muted,
         speed: audioPlayer.playbackRate
     };
     localStorage.setItem(STORAGE_KEYS.PLAYER_SETTINGS, JSON.stringify(settings));
@@ -452,6 +478,10 @@ function loadSettings() {
     const savedSettings = localStorage.getItem(STORAGE_KEYS.PLAYER_SETTINGS);
     if (savedSettings) {
         const settings = JSON.parse(savedSettings);
+
+        audioPlayer.volume = settings.volume ?? 1;
+        audioPlayer.muted = settings.muted ?? false;
+        lastVolume = audioPlayer.volume;
 
         // Restore Playback Speed
         const savedSpeed = settings.speed ?? 1;
@@ -469,6 +499,7 @@ function loadSettings() {
     });
 
     updateRangeFill(seekBar);
+    updateRangeFill(volumeBar);
 }
 
 // Init on first load
