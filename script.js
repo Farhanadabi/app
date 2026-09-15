@@ -50,7 +50,6 @@ const STORAGE_KEYS = {
     PLAYER_SETTINGS: 'espressoPlayer_settings'
 };
 
-
 // DOM Elements
 const bookSelect = document.getElementById('book-select');
 const bookTrigger = document.getElementById('book-trigger');
@@ -482,7 +481,7 @@ function loadSettings() {
     const savedSettings = localStorage.getItem(STORAGE_KEYS.PLAYER_SETTINGS);
     if (savedSettings) {
         const settings = JSON.parse(savedSettings);
-        
+
         // Restore Volume and Mute state
         audioPlayer.volume = settings.volume ?? 1;
         audioPlayer.muted = settings.muted ?? false;
@@ -490,7 +489,7 @@ function loadSettings() {
         // Restore Playback Speed
         const savedSpeed = settings.speed ?? 1;
         currentSpeedIndex = playbackSpeeds.indexOf(savedSpeed);
-        if (currentSpeedIndex === -1) currentSpeedIndex = 1; // Default to 1x if not found
+        if (currentSpeedIndex === -1) currentSpeedIndex = 3; // Default to 1x if not found
 
         audioPlayer.playbackRate = playbackSpeeds[currentSpeedIndex];
         speedBtn.textContent = `${playbackSpeeds[currentSpeedIndex]}x`;
