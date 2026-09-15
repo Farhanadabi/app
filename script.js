@@ -114,11 +114,13 @@ const totalTimeDisplay = document.getElementById('total-time');
 const volumeBar = document.getElementById('volume-bar');
 const muteBtn = document.getElementById('mute-btn');
 const speedBtn = document.getElementById('speed-btn');
+const speedOptions = document.getElementById('speed-options');
+const speedButtons = document.querySelectorAll('.speed-option');
 const muteIcon = muteBtn.querySelector('svg'); // Get the SVG icon inside the mute button
 let lastVolume = 1; // To remember volume before mute
 
-const playbackSpeeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
-let currentSpeedIndex = 1; // Corresponds to 1x speed
+const playbackSpeeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+let currentSpeedIndex = 3; // Corresponds to 1x speed
 
 // --- LOAD TRACK LIST ---
 
@@ -412,16 +414,43 @@ audioPlayer.addEventListener('volumechange', () => {
     saveSettings();
 });
 
-// Playback Speed Control
-speedBtn.addEventListener('click', () => {
-    // Cycle to the next speed
-    currentSpeedIndex = (currentSpeedIndex + 1) % playbackSpeeds.length;
-    const newSpeed = playbackSpeeds[currentSpeedIndex];
-    
-    audioPlayer.playbackRate = newSpeed;
-    speedBtn.textContent = `${newSpeed}x`;
-    
+function setPlaybackSpeed(speed) {
+    const normalized = Number(speed);
+    const foundIndex = playbackSpeeds.indexOf(normalized);
+    if (foundIndex === -1) return;
+
+    currentSpeedIndex = foundIndex;
+    audioPlayer.playbackRate = playbackSpeeds[currentSpeedIndex];
+    speedBtn.textContent = `${playbackSpeeds[currentSpeedIndex]}x`;
+    speedBtn.setAttribute('aria-expanded', 'false');
+    speedOptions.classList.remove('open');
+
+    speedButtons.forEach((button) => {
+        const isActive = Number(button.dataset.speed) === playbackSpeeds[currentSpeedIndex];
+        button.classList.toggle('active', isActive);
+        button.setAttribute('aria-checked', String(isActive));
+    });
+
     saveSettings();
+}
+
+// Playback Speed Menu
+speedBtn.addEventListener('click', () => {
+    const isOpen = speedOptions.classList.toggle('open');
+    speedBtn.setAttribute('aria-expanded', String(isOpen));
+});
+
+speedButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        setPlaybackSpeed(button.dataset.speed);
+    });
+});
+
+document.addEventListener('click', (event) => {
+    if (!event.target.closest('.speed-menu')) {
+        speedOptions.classList.remove('open');
+        speedBtn.setAttribute('aria-expanded', 'false');
+    }
 });
 
 // Handle Book Change via Dropdown
@@ -462,10 +491,17 @@ function loadSettings() {
         const savedSpeed = settings.speed ?? 1;
         currentSpeedIndex = playbackSpeeds.indexOf(savedSpeed);
         if (currentSpeedIndex === -1) currentSpeedIndex = 1; // Default to 1x if not found
-        
+
         audioPlayer.playbackRate = playbackSpeeds[currentSpeedIndex];
         speedBtn.textContent = `${playbackSpeeds[currentSpeedIndex]}x`;
     }
+
+    speedButtons.forEach((button) => {
+        const isActive = Number(button.dataset.speed) === playbackSpeeds[currentSpeedIndex];
+        button.classList.toggle('active', isActive);
+        button.setAttribute('aria-checked', String(isActive));
+    });
+
     updateRangeFill(volumeBar);
     updateRangeFill(seekBar);
 }
